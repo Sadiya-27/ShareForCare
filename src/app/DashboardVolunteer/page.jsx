@@ -197,7 +197,7 @@ export default function Dashboard() {
 
                   <button
                     onClick={() => router.push("/donate/school-supplies")}
-                    className="px-3 py-2 rounded-md hover:bg-blue-700 bg-blue-600"
+                    className="px-3 py-2 rounded-md hover:bg-blue-700"
                   >
                     School Supplies
                   </button>
