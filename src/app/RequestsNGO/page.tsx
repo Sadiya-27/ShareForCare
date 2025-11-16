@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 import {
   LogOut,
@@ -17,15 +16,43 @@ import {
 } from "lucide-react";
 
 // ------------------------------------------------
+// TYPES
+// ------------------------------------------------
+type RequestItem = {
+  _id: string;
+  type: string;
+  completed?: boolean;
+  images?: string[];
+  ngoName?: string;
+  clothType?: string;
+  footwearType?: string;
+  supplyType?: string;
+  category?: string;
+  quantity?: number;
+  reason?: string;
+  size?: string;
+  fabricType?: string;
+  season?: string;
+  shoeSize?: string;
+  classLevel?: string;
+  color?: string;
+  deliveryPreference?: string;
+  ngoAddress?: string;
+  city?: string;
+  state?: string;
+  requiredBefore?: string;
+  [key: string]: unknown;
+};
+
+// ------------------------------------------------
 // MAIN PAGE
 // ------------------------------------------------
 export default function YourRequests() {
   const [user, setUser] = useState<User | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showDonateDropdown, setShowDonateDropdown] = useState(false);
 
-  const [requests, setRequests] = useState<Record<string, any>[]>([]);
-  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [requests, setRequests] = useState<RequestItem[]>([]);
+  const [selectedRequest, setSelectedRequest] = useState<RequestItem | null>(null);
   const [loading, setLoading] = useState(true);
 
   const router = useRouter();
@@ -48,37 +75,37 @@ export default function YourRequests() {
   };
 
   // --------------------------------------------
-  // FETCH ALL REQUESTS FROM 3 COLLECTIONS
+  // FETCH REQUESTS FROM API
   // --------------------------------------------
   useEffect(() => {
     async function fetchAll() {
-      if (!user?.uid) return; // wait for auth
+      if (!user?.uid) return;
       setLoading(true);
 
       const uid = user.uid;
 
       try {
-        const cloths = await fetch(`/api/requests/by-user/${uid}`)
+        const cloths: RequestItem[] = await fetch(`/api/requests/by-user/${uid}`)
           .then((r) => r.json())
           .catch(() => []);
 
-        const footwear = await fetch(`/api/request-footwear/by-user/${uid}`)
+        const footwear: RequestItem[] = await fetch(
+          `/api/request-footwear/by-user/${uid}`
+        )
           .then((r) => r.json())
           .catch(() => []);
 
-        const school = await fetch(
+        const school: RequestItem[] = await fetch(
           `/api/request-school-supplies/by-user/${uid}`
         )
           .then((r) => r.json())
           .catch(() => []);
 
-        // Combine into single list
-        const combined = [
-  ...cloths.map((r: Record<string, unknown>) => ({ ...r, type: "cloths" })),
-  ...footwear.map((r: Record<string, unknown>) => ({ ...r, type: "footwear" })),
-  ...school.map((r: Record<string, unknown>) => ({ ...r, type: "school-supplies" })),
-];
-
+        const combined: RequestItem[] = [
+          ...cloths.map((r) => ({ ...r, type: "cloths" })),
+          ...footwear.map((r) => ({ ...r, type: "footwear" })),
+          ...school.map((r) => ({ ...r, type: "school-supplies" })),
+        ];
 
         setRequests(combined);
       } catch (err) {
@@ -94,8 +121,11 @@ export default function YourRequests() {
   // --------------------------------------------
   // MARK COMPLETED / NOT COMPLETED
   // --------------------------------------------
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const markCompleted = async (id: any, type: any, status: any) => {
+  const markCompleted = async (
+    id: string,
+    type: string,
+    status: boolean
+  ): Promise<void> => {
     const collection =
       type === "cloths"
         ? "requests"
@@ -110,7 +140,9 @@ const markCompleted = async (id: any, type: any, status: any) => {
     });
 
     setRequests((prev) =>
-      prev.map((r) => (r._id === id ? { ...r, completed: status } : r))
+      prev.map((r) =>
+        r._id === id ? { ...r, completed: status } : r
+      )
     );
 
     setSelectedRequest(null);
@@ -127,7 +159,7 @@ const markCompleted = async (id: any, type: any, status: any) => {
   const schoolRequests = pending.filter((r) => r.type === "school-supplies");
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-height-screen bg-white">
       {/* Sidebar */}
       <Sidebar
         user={user}
@@ -145,7 +177,6 @@ const markCompleted = async (id: any, type: any, status: any) => {
             <Package size={28} /> Your Requests
           </h1>
 
-          {/* CLOTHS SECTION */}
           {clothRequests.length > 0 && (
             <Section
               title="Cloths Requests"
@@ -154,7 +185,6 @@ const markCompleted = async (id: any, type: any, status: any) => {
             />
           )}
 
-          {/* FOOTWEAR SECTION */}
           {footwearRequests.length > 0 && (
             <Section
               title="Footwear Requests"
@@ -163,7 +193,6 @@ const markCompleted = async (id: any, type: any, status: any) => {
             />
           )}
 
-          {/* SCHOOL SUPPLIES SECTION */}
           {schoolRequests.length > 0 && (
             <Section
               title="School Supplies Requests"
@@ -172,7 +201,6 @@ const markCompleted = async (id: any, type: any, status: any) => {
             />
           )}
 
-          {/* COMPLETED REQUESTS */}
           {completedRequests.length > 0 && (
             <>
               <h2 className="text-2xl font-semibold text-green-700 mt-10">
@@ -210,6 +238,13 @@ function Sidebar({
   handleLogout,
   showDonateDropdown,
   setShowDonateDropdown,
+}: {
+  user: User | null;
+  router: ReturnType<typeof useRouter>;
+  pathname: string | null;
+  handleLogout: () => void;
+  showDonateDropdown: boolean;
+  setShowDonateDropdown: (v: boolean | ((prev: boolean) => boolean)) => void;
 }) {
   return (
     <aside className="bg-blue-900 text-white flex flex-col justify-between h-screen w-64 fixed md:sticky z-50">
@@ -225,29 +260,25 @@ function Sidebar({
         </div>
 
         <nav className="mt-8 flex flex-col gap-2">
-          {/* --- HOME BUTTON --- */}
           <button
             onClick={() => router.push("/DashboardNGO")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium 
-              ${
-                pathname === "/DashboardNGO"
-                  ? "bg-blue-800"
-                  : "hover:bg-blue-700"
-              }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${
+              pathname === "/DashboardNGO"
+                ? "bg-blue-800"
+                : "hover:bg-blue-700"
+            }`}
           >
             <Home size={20} /> Home
           </button>
 
-          {/* --- REQUEST DROPDOWN --- */}
           <div className="px-4 py-2">
             <button
               onClick={() => setShowDonateDropdown((p) => !p)}
-              className={`flex items-center justify-between w-full gap-2 rounded-lg px-4 py-2
-                ${
-                  pathname.includes("/request")
-                    ? "bg-blue-800"
-                    : "hover:bg-blue-700"
-                }`}
+              className={`flex items-center justify-between w-full gap-2 rounded-lg px-4 py-2 ${
+                pathname?.includes("/request")
+                  ? "bg-blue-800"
+                  : "hover:bg-blue-700"
+              }`}
             >
               <div className="flex items-center gap-2">
                 <Gift size={20} /> Request
@@ -279,7 +310,6 @@ function Sidebar({
             )}
           </div>
 
-          {/* --- PROFILE BUTTON --- */}
           <SideBtn
             path="/profileNGO"
             router={router}
@@ -288,18 +318,16 @@ function Sidebar({
             active={pathname === "/profileNGO"}
           />
 
-          {/* --- REQUESTS BUTTON --- */}
           <SideBtn
             path="/RequestsNGO"
             router={router}
             text="Your Requests"
             icon={Package}
-            active={pathname === "/RequestsNGO"} // HIGHLIGHT HERE
+            active={pathname === "/RequestsNGO"}
           />
         </nav>
       </div>
 
-      {/* Logout */}
       <div className="px-4 py-4">
         <div className="flex items-center gap-2">
           {user?.photoURL && (
@@ -326,7 +354,17 @@ function Sidebar({
 // ------------------------------------------------
 // SECTION CARDS
 // ------------------------------------------------
-function Section({ title, items, onClick, hideTitle }) {
+function Section({
+  title,
+  items,
+  onClick,
+  hideTitle,
+}: {
+  title?: string;
+  items: RequestItem[];
+  onClick: (item: RequestItem) => void;
+  hideTitle?: boolean;
+}) {
   if (!items.length) return null;
 
   return (
@@ -342,7 +380,7 @@ function Section({ title, items, onClick, hideTitle }) {
             onClick={() => onClick(item)}
             className="border p-4 rounded-lg shadow hover:shadow-lg transition cursor-pointer bg-white"
           >
-            {item.images?.length > 0 && (
+            {item.images?.length ? (
               <Image
                 src={item.images[0]}
                 width={300}
@@ -350,7 +388,7 @@ function Section({ title, items, onClick, hideTitle }) {
                 className="rounded mb-3 object-cover h-40 w-full"
                 alt="Preview"
               />
-            )}
+            ) : null}
 
             <h3 className="font-semibold text-lg">{item.ngoName}</h3>
 
@@ -362,9 +400,7 @@ function Section({ title, items, onClick, hideTitle }) {
                 : item.supplyType}
             </p>
 
-            <p className="text-sm mt-2 font-medium">
-              Quantity: {item.quantity}
-            </p>
+            <p className="text-sm mt-2 font-medium">Quantity: {item.quantity}</p>
           </div>
         ))}
       </div>
@@ -375,14 +411,15 @@ function Section({ title, items, onClick, hideTitle }) {
 // ------------------------------------------------
 // DETAILS MODAL
 // ------------------------------------------------
-function DetailsModal({ request, close, markCompleted }) {
-  const collection =
-    request.type === "cloths"
-      ? "requests"
-      : request.type === "footwear"
-      ? "request-footwear"
-      : "request-school-supplies";
-
+function DetailsModal({
+  request,
+  close,
+  markCompleted,
+}: {
+  request: RequestItem;
+  close: () => void;
+  markCompleted: (id: string, type: string, status: boolean) => void;
+}) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center p-4 z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full relative">
@@ -397,7 +434,7 @@ function DetailsModal({ request, close, markCompleted }) {
           {request.ngoName}
         </h2>
 
-        {request.images?.length > 0 && (
+        {request.images?.length ? (
           <div className="grid grid-cols-2 gap-2 mb-4">
             {request.images.map((img, i) => (
               <Image
@@ -410,7 +447,7 @@ function DetailsModal({ request, close, markCompleted }) {
               />
             ))}
           </div>
-        )}
+        ) : null}
 
         <div className="space-y-1 text-gray-700">
           <p>
@@ -426,7 +463,6 @@ function DetailsModal({ request, close, markCompleted }) {
             <strong>Reason:</strong> {request.reason}
           </p>
 
-          {/* School, Cloth & Footwear details */}
           {request.type === "cloths" && (
             <>
               <p>
@@ -489,14 +525,18 @@ function DetailsModal({ request, close, markCompleted }) {
         <div className="mt-4 flex gap-3">
           {!request.completed ? (
             <button
-              onClick={() => markCompleted(request._id, request.type, true)}
+              onClick={() =>
+                markCompleted(request._id, request.type, true)
+              }
               className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
             >
               <CheckCircle size={18} /> Mark Completed
             </button>
           ) : (
             <button
-              onClick={() => markCompleted(request._id, request.type, false)}
+              onClick={() =>
+                markCompleted(request._id, request.type, false)
+              }
               className="bg-yellow-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
             >
               <XCircle size={18} /> Mark Not Completed
@@ -508,14 +548,30 @@ function DetailsModal({ request, close, markCompleted }) {
   );
 }
 
-function SideBtn({ path, router, text, icon: Icon, active }) {
+// ------------------------------------------------
+// SIDEBAR BUTTON
+// ------------------------------------------------
+function SideBtn({
+  path,
+  router,
+  text,
+  icon: Icon,
+  active,
+}: {
+  path: string;
+  router: ReturnType<typeof useRouter>;
+  text: string;
+  icon?: React.ElementType;
+  active: boolean;
+}) {
   return (
     <button
       onClick={() => router.push(path)}
-      className={`flex items-center gap-3 px-4 py-2 rounded-lg w-full text-left 
-        ${
-          active ? "bg-blue-800 text-white" : "hover:bg-blue-700 text-gray-200"
-        }`}
+      className={`flex items-center gap-3 px-4 py-2 rounded-lg w-full text-left ${
+        active
+          ? "bg-blue-800 text-white"
+          : "hover:bg-blue-700 text-gray-200"
+      }`}
     >
       {Icon && <Icon size={18} />}
       {text}
