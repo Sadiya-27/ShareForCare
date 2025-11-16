@@ -9,7 +9,6 @@ import {
   LogOut,
   Home,
   Gift,
-  Repeat,
   User,
   Package,
   XCircle,
