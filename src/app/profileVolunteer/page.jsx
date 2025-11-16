@@ -9,7 +9,7 @@ import {
 } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
 import { useRouter } from "next/navigation";
-import { LogOut, Home, Users, Gift, Repeat, User, Package } from "lucide-react";
+import { LogOut, Home, Users, Gift, User, Package } from "lucide-react";
 import FileUpload from "../components/FileUpload";
 import axios from "axios";
 import "leaflet/dist/leaflet.css";
