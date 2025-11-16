@@ -89,7 +89,7 @@ export default function YourRequests() {
     }
 
     fetchAll();
-  }, [user]);
+  }, [user, router]);
 
   // --------------------------------------------
   // MARK COMPLETED / NOT COMPLETED
