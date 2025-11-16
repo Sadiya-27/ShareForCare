@@ -12,8 +12,8 @@ export default function RequestFootwear() {
   const [user, setUser] = useState<User | null>(null);
   const [showDonateDropdown, setShowDonateDropdown] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [images, setImages] = useState([]);
-
+  const [images, setImages] = useState<string[]>([]);
+  
   const pathname = usePathname();
   const router = useRouter();
 
@@ -66,7 +66,7 @@ export default function RequestFootwear() {
     setImages((prev) => [...prev, ...urls]);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const data = {
