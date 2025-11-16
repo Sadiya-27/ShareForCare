@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -11,7 +11,7 @@ import {
   Home,
   Gift,
   Repeat,
-  User,
+  User as UserIcon,
   Package,
   XCircle,
   CheckCircle,
@@ -21,7 +21,7 @@ import {
 // MAIN PAGE
 // ------------------------------------------------
 export default function YourRequests() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showDonateDropdown, setShowDonateDropdown] = useState(false);
 
@@ -283,7 +283,7 @@ function Sidebar({
             path="/profileNGO"
             router={router}
             text="Profile"
-            icon={User}
+            icon={UserIcon}
             active={pathname === "/profileNGO"}
           />
 
