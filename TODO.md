@@ -1,0 +1,3 @@
+- [ ] Update NGOSidebar.jsx to accept isOpen and setIsOpen as props instead of local state
+- [ ] Update DashboardNGO/page.jsx to pass isOpen and setIsOpen to NGOSidebar
+- [ ] Test responsiveness on both DashboardNGO and profileNGO pages

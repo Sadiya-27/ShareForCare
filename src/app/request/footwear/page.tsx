@@ -1,29 +1,31 @@
 "use client";
-import { useState, useEffect } from "react";
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
+import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
-import { LogOut, Home, Gift, Repeat, User, Menu, Package } from "lucide-react";
+import { LogOut, Home, Gift, Repeat, User, Package } from "lucide-react";
 import AddImageButton from "@/app/components/AddImageButton";
 import "@uploadthing/react/styles.css";
 
-export default function DonateFootwear() {
+export default function RequestFootwear() {
   const [user, setUser] = useState(null);
+  const [showDonateDropdown, setShowDonateDropdown] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showDonateDropdown, setShowDonateDropdown] = useState(true);
   const [images, setImages] = useState([]);
 
-  const router = useRouter();
   const pathname = usePathname();
-  const isActive = (path) => pathname === path;
+  const router = useRouter();
 
-  // Donor Details
-  const [donorName, setDonorName] = useState("");
+  const isActive = (path: string) => pathname === path;
+
+  // NGO Details
+  const [ngoName, setNgoName] = useState("");
+  const [contactPerson, setContactPerson] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [contactEmail, setContactEmail] = useState("");
 
-  // Footwear Fields
+  // Footwear Details
   const [shoeType, setShoeType] = useState("");
   const [size, setSize] = useState("");
   const [material, setMaterial] = useState("");
@@ -32,22 +34,21 @@ export default function DonateFootwear() {
   const [gender, setGender] = useState("");
   const [condition, setCondition] = useState("");
   const [season, setSeason] = useState("");
+  const [purpose, setPurpose] = useState("");
   const [color, setColor] = useState("");
-  const [description, setDescription] = useState("");
+  const [reason, setReason] = useState("");
 
-  // Delivery
-  const [deliveryMethod, setDeliveryMethod] = useState("");
-
-  // Address (Pickup)
-  const [address, setAddress] = useState("");
+  // Delivery & Address
+  const [deliveryPreference, setDeliveryPreference] = useState("");
+  const [ngoAddress, setNgoAddress] = useState("");
   const [landmark, setLandmark] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
 
   // Dates
-  const [availableFrom, setAvailableFrom] = useState("");
+  const [requiredBefore, setRequiredBefore] = useState("");
+  const [urgency, setUrgency] = useState("");
 
-  // AUTH CHECK
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (currentUser) => {
       if (!currentUser) router.push("/Login");
@@ -61,16 +62,16 @@ export default function DonateFootwear() {
     router.push("/Login");
   };
 
-  const handleImagesUpload = (urls) => {
+  const handleImagesUpload = (urls: any) => {
     setImages((prev) => [...prev, ...urls]);
   };
 
-  // SUBMIT FORM
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
 
     const data = {
-      donorName,
+      ngoName,
+      contactPerson,
       contactNumber,
       contactEmail,
 
@@ -82,22 +83,24 @@ export default function DonateFootwear() {
       gender,
       condition,
       season,
+      purpose,
       color,
-      description,
+      reason,
 
-      deliveryMethod,
-      address,
+      deliveryPreference,
+      ngoAddress,
       landmark,
       city,
       state,
 
-      availableFrom,
+      requiredBefore,
+      urgency,
 
       images,
       userId: user?.uid,
     };
 
-    const res = await fetch("/api/donate-footwear", {
+    const res = await fetch("/api/request-footwear", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -112,16 +115,16 @@ export default function DonateFootwear() {
       {/* SIDEBAR */}
       <aside
         className={`bg-blue-900 text-white flex flex-col justify-between
-              h-screen w-64 fixed md:sticky z-50 transition-transform duration-300
-              ${
-                sidebarOpen ? "translate-x-0" : "-translate-x-full"
-              } md:translate-x-0`}
+          h-screen w-64 fixed md:sticky transition-transform duration-300 z-50
+          ${
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } md:translate-x-0`}
       >
         <div>
-          {/* LOGO */}
+          {/* Logo */}
           <div
             className="flex items-center gap-2 px-4 py-4 cursor-pointer"
-            onClick={() => router.push("/Dashboard")}
+            onClick={() => router.push("/DashboardNGO")}
           >
             <Image src="/logo3.png" width={50} height={50} alt="Logo" />
             <h1 className="text-2xl font-semibold">
@@ -129,47 +132,52 @@ export default function DonateFootwear() {
             </h1>
           </div>
 
-          {/* NAV */}
+          {/* Navigation */}
           <nav className="mt-6 flex flex-col gap-2 px-3">
             <button
-              onClick={() => router.push("/DashboardVolunteer")}
-              className="flex items-center rounded-lg gap-2 px-4 py-2 hover:bg-blue-700"
+              onClick={() => router.push("/DashboardNGO")}
+              className="flex items-center gap-2 rounded-lg px-4 py-2 hover:bg-blue-700"
             >
               <Home size={20} /> Home
             </button>
 
-            {/* Donate Dropdown */}
+            {/* Dropdown */}
             <div className="px-4 py-2">
               <button
                 onClick={() => setShowDonateDropdown(!showDonateDropdown)}
-                className="w-full bg-blue-800 hover:bg-blue-700 px-4 py-2 flex justify-between items-center rounded-lg"
+                className="w-full px-4 py-2 bg-blue-800 hover:bg-blue-700 flex justify-between items-center rounded-lg"
               >
                 <div className="flex gap-2 items-center">
-                  <Gift size={20} />
-                  Donate
+                  <Gift size={20} /> Request
                 </div>
                 <span>{showDonateDropdown ? "▲" : "▼"}</span>
               </button>
 
               {showDonateDropdown && (
-                <div className="mt-2 bg-blue-900 rounded-md ml-4 p-1 flex flex-col">
+                <div className="bg-blue-900 rounded-md ml-4 mt-2 p-1 flex flex-col">
                   <button
-                    onClick={() => router.push("/donate/cloths")}
-                    className="px-3 py-2 rounded-md hover:bg-blue-700"
+                    onClick={() => router.push("/request/cloths")}
+                    className={`px-3 py-2 rounded-md hover:bg-blue-700 ${
+                      isActive("/request/cloths") ? "bg-blue-600" : ""
+                    }`}
                   >
                     Cloths
                   </button>
 
                   <button
-                    onClick={() => router.push("/donate/footwear")}
-                    className="px-3 py-2 rounded-md hover:bg-blue-700 bg-blue-800"
+                    onClick={() => router.push("/request/footwear")}
+                    className={`px-3 py-2 rounded-md hover:bg-blue-700 ${
+                      isActive("/request/footwear") ? "bg-blue-600" : ""
+                    }`}
                   >
                     Footwear
                   </button>
 
                   <button
-                    onClick={() => router.push("/donate/school-supplies")}
-                    className="px-3 py-2 rounded-md hover:bg-blue-700 "
+                    onClick={() => router.push("/request/school-supplies")}
+                    className={`px-3 py-2 rounded-md hover:bg-blue-700 ${
+                      isActive("/request/school-supplies") ? "bg-blue-600" : ""
+                    }`}
                   >
                     School Supplies
                   </button>
@@ -178,22 +186,22 @@ export default function DonateFootwear() {
             </div>
 
             <button
-              onClick={() => router.push("/profileVolunteer")}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-blue-700"
+              onClick={() => router.push("/profileNGO")}
+              className="flex items-center rounded-lg gap-2 px-4 py-2 hover:bg-blue-700"
             >
               <User size={20} /> Profile
             </button>
 
             <button
-              onClick={() => router.push("/donationVolunteer")}
-              className="flex items-center rounded-lg gap-2 px-4 py-2 hover:bg-blue-700"
+              onClick={() => router.push("/RequestsNGO")}
+              className="flex items-center gap-2 px-4 py-2 hover:bg-blue-700 rounded-lg"
             >
-              <Package size={20} /> Your Donation
+              <Package size={20} /> Your Requests
             </button>
           </nav>
         </div>
 
-        {/* LOGOUT */}
+        {/* Logout */}
         <div className="px-4 py-4">
           <div className="flex items-center gap-2">
             {user?.photoURL && (
@@ -216,10 +224,10 @@ export default function DonateFootwear() {
       </aside>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 p-6 md:mx-40 mt-16 md:mt-0">
+      <main className="flex-1 p-6 md:mx-30 mt-6">
         <div className="bg-white p-6 rounded-xl shadow-md">
           <h2 className="text-2xl font-semibold text-blue-900 mb-4">
-            Donate Footwear
+            Request Footwear
           </h2>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
@@ -245,12 +253,20 @@ export default function DonateFootwear() {
               )}
             </div>
 
-            {/* DONOR DETAILS */}
+            {/* NGO FIELDS */}
             <input
               className="border p-2 rounded w-full"
-              placeholder="Donor Name*"
-              value={donorName}
-              onChange={(e) => setDonorName(e.target.value)}
+              placeholder="NGO Name*"
+              value={ngoName}
+              onChange={(e) => setNgoName(e.target.value)}
+              required
+            />
+
+            <input
+              className="border p-2 rounded w-full"
+              placeholder="Contact Person*"
+              value={contactPerson}
+              onChange={(e) => setContactPerson(e.target.value)}
               required
             />
 
@@ -286,16 +302,45 @@ export default function DonateFootwear() {
               <option value="sandals">Sandals</option>
               <option value="flipflops">Flip-Flops</option>
               <option value="boots">Boots</option>
+              <option value="running-shoes">Running Shoes</option>
             </select>
 
-            {/* SIZE */}
-            <input
+            {/* Shoe Size */}
+            <select
               className="border p-2 rounded w-full"
-              placeholder="Size (e.g., 7, 8, kids-10)*"
               value={size}
               onChange={(e) => setSize(e.target.value)}
               required
-            />
+            >
+              <option value="">Size*</option>
+
+              {/* ADULT MEN */}
+              <optgroup label="Men">
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+              </optgroup>
+
+              {/* WOMEN */}
+              <optgroup label="Women">
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6w">6</option>
+                <option value="7w">7</option>
+                <option value="8w">8</option>
+              </optgroup>
+
+              {/* KIDS */}
+              <optgroup label="Kids">
+                <option value="kids-8">Kids 8</option>
+                <option value="kids-9">Kids 9</option>
+                <option value="kids-10">Kids 10</option>
+                <option value="kids-11">Kids 11</option>
+                <option value="kids-12">Kids 12</option>
+              </optgroup>
+            </select>
 
             {/* MATERIAL */}
             <select
@@ -305,33 +350,39 @@ export default function DonateFootwear() {
             >
               <option value="">Material (Optional)</option>
               <option value="leather">Leather</option>
+              <option value="synthetic">Synthetic</option>
+              <option value="mesh">Mesh</option>
               <option value="canvas">Canvas</option>
               <option value="rubber">Rubber</option>
-              <option value="synthetic">Synthetic</option>
+              <option value="foam">Foam</option>
             </select>
 
-            {/* CATEGORY */}
+            {/* PURPOSE */}
             <select
               className="border p-2 rounded w-full"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              value={purpose}
+              onChange={(e) => setPurpose(e.target.value)}
             >
-              <option value="">Category (Optional)</option>
-              <option value="casual">Casual</option>
+              <option value="">Purpose (Optional)</option>
+              <option value="school">School Wear</option>
               <option value="sports">Sports</option>
-              <option value="formal">Formal</option>
-              <option value="school">School</option>
+              <option value="formal">Formal Use</option>
+              <option value="daily-use">Daily Use</option>
+              <option value="running">Running</option>
             </select>
 
-            {/* QUANTITY */}
-            <input
-              type="number"
+            {/* CONDITION */}
+            <select
               className="border p-2 rounded w-full"
-              placeholder="Quantity*"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              required
-            />
+              value={condition}
+              onChange={(e) => setCondition(e.target.value)}
+            >
+              <option value="">Condition (Optional)</option>
+              <option value="new">Brand New</option>
+              <option value="like-new">Like New</option>
+              <option value="good">Good</option>
+              <option value="usable">Usable</option>
+            </select>
 
             {/* GENDER */}
             <select
@@ -346,32 +397,6 @@ export default function DonateFootwear() {
               <option value="unisex">Unisex</option>
             </select>
 
-            {/* CONDITION */}
-            <select
-              className="border p-2 rounded w-full"
-              value={condition}
-              onChange={(e) => setCondition(e.target.value)}
-              required
-            >
-              <option value="">Condition*</option>
-              <option value="new">Brand New</option>
-              <option value="like-new">Like New</option>
-              <option value="good">Good</option>
-              <option value="usable">Usable</option>
-            </select>
-
-            {/* SEASON */}
-            <select
-              className="border p-2 rounded w-full"
-              value={season}
-              onChange={(e) => setSeason(e.target.value)}
-            >
-              <option value="">Season (Optional)</option>
-              <option value="rainy">Rainy</option>
-              <option value="winter">Winter</option>
-              <option value="summer">Summer</option>
-            </select>
-
             {/* COLOR */}
             <input
               className="border p-2 rounded w-full"
@@ -380,78 +405,96 @@ export default function DonateFootwear() {
               onChange={(e) => setColor(e.target.value)}
             />
 
-            {/* DESCRIPTION */}
-            <textarea
+            {/* Quantity */}
+            <input
+              type="number"
               className="border p-2 rounded w-full"
-              placeholder="Description of the footwear*"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Quantity Required*"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
               required
             />
 
-            {/* DELIVERY METHOD */}
+            {/* Reason */}
+            <textarea
+              className="border p-2 rounded w-full"
+              placeholder="Reason for Request*"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              required
+            />
+
+            {/* Delivery */}
             <select
               className="border p-2 rounded w-full"
-              value={deliveryMethod}
-              onChange={(e) => setDeliveryMethod(e.target.value)}
+              value={deliveryPreference}
+              onChange={(e) => setDeliveryPreference(e.target.value)}
               required
             >
-              <option value="">Delivery Method*</option>
-              <option value="drop-off">I Will Drop It Off</option>
-              <option value="pickup-request">Request Pickup</option>
+              <option value="">Delivery Preference*</option>
+              <option value="pickup">Donor Delivers</option>
+              <option value="ngo-pickup">NGO Pickup</option>
             </select>
 
-            {/* ADDRESS FIELDS (only for pickup request) */}
-            {deliveryMethod === "pickup-request" && (
-              <>
-                <input
-                  className="border p-2 rounded w-full"
-                  placeholder="Pickup Address*"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  required
-                />
+            {/* Address */}
+            <input
+              className="border p-2 rounded w-full"
+              placeholder="NGO Address*"
+              value={ngoAddress}
+              onChange={(e) => setNgoAddress(e.target.value)}
+              required
+            />
 
-                <input
-                  className="border p-2 rounded w-full"
-                  placeholder="Landmark (Optional)"
-                  value={landmark}
-                  onChange={(e) => setLandmark(e.target.value)}
-                />
+            <input
+              className="border p-2 rounded w-full"
+              placeholder="Landmark (Optional)"
+              value={landmark}
+              onChange={(e) => setLandmark(e.target.value)}
+            />
 
-                <input
-                  className="border p-2 rounded w-full"
-                  placeholder="City*"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  required
-                />
+            <input
+              className="border p-2 rounded w-full"
+              placeholder="City*"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              required
+            />
 
-                <input
-                  className="border p-2 rounded w-full"
-                  placeholder="State*"
-                  value={state}
-                  onChange={(e) => setState(e.target.value)}
-                  required
-                />
-              </>
-            )}
+            <input
+              className="border p-2 rounded w-full"
+              placeholder="State*"
+              value={state}
+              onChange={(e) => setState(e.target.value)}
+              required
+            />
 
-            {/* AVAILABLE FROM */}
+            {/* Required Before */}
             <input
               type="date"
               className="border p-2 rounded w-full"
-              value={availableFrom}
-              onChange={(e) => setAvailableFrom(e.target.value)}
+              value={requiredBefore}
+              onChange={(e) => setRequiredBefore(e.target.value)}
               required
             />
 
-            {/* SUBMIT */}
+            {/* Urgency */}
+            <select
+              className="border p-2 rounded w-full"
+              value={urgency}
+              onChange={(e) => setUrgency(e.target.value)}
+              required
+            >
+              <option value="">Urgency Level*</option>
+              <option value="normal">Normal</option>
+              <option value="urgent">Urgent (3–5 days)</option>
+              <option value="very-urgent">Very Urgent (48 hours)</option>
+            </select>
+
             <button
               type="submit"
               className="w-full bg-blue-900 text-white py-3 rounded-lg"
             >
-              Submit Donation
+              Submit Request
             </button>
           </form>
         </div>

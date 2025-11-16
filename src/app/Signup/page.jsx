@@ -15,6 +15,24 @@ export default function SignupPage() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
 
+  // --- Save user to MongoDB ---
+  const saveUserToDB = async (user) => {
+    try {
+      await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firebaseUid: user.uid,
+          name: user.displayName || form.name,
+          email: user.email,
+          role: "user",
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to save user:", err);
+    }
+  };
+
   // --- Email Signup Handler ---
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -25,8 +43,9 @@ export default function SignupPage() {
         form.password
       );
       await updateProfile(userCred.user, { displayName: form.name });
+      await saveUserToDB(userCred.user); // <-- save user to DB
       alert("Signup successful!");
-      router.push("/Login");
+      router.push("/Option");
     } catch (err) {
       setError(err.message);
     }
@@ -37,6 +56,7 @@ export default function SignupPage() {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
+      await saveUserToDB(user); // <-- save user to DB
       alert(`Welcome ${user.displayName || "User"}!`);
       router.push("/Login");
     } catch (err) {
@@ -57,7 +77,7 @@ export default function SignupPage() {
             className="rounded-xl mb-2"
           />
           <Link href="/">
-            <h1 className="text-3xl font-bold text-blue-900" href="/">
+            <h1 className="text-3xl font-bold text-blue-900">
               Share<i>For</i>Care
             </h1>
           </Link>
@@ -118,12 +138,12 @@ export default function SignupPage() {
 
         <p className="text-center text-gray-600 mt-4">
           Already have an account?{" "}
-          <a
+          <Link
             href="/Login"
             className="text-blue-900 font-semibold hover:underline"
           >
             Login
-          </a>
+          </Link>
         </p>
       </div>
     </div>

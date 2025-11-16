@@ -11,7 +11,16 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'firebasestorage.googleapis.com', // (optional if you use Firebase Storage too)
       },
+      {
+        protocol: "https",
+        hostname: "**.ufs.sh",   // allow ALL UploadThing subdomains
+      },
+      {
+        protocol: "https",
+        hostname: "**.utfs.io",  // allow utfs.io variants
+      },
     ],
+    domains: ["utfs.io"],
   },
 };
 

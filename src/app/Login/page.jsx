@@ -9,6 +9,7 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import Link from "next/link";
+import axios from "axios";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,35 +17,91 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Google provider
   const provider = new GoogleAuthProvider();
 
-  // Handle email/password login
+  // ✅ Route users based on role
+  const routeByRole = (role) => {
+    if (!role) {
+      router.push("/Options"); // If no role → go to Options page
+    } else if (role === "NGO") {
+      router.push("/DashboardNGO");
+    } else if (role === "Volunteer") {
+      router.push("/DashboardVolunteer");
+    } else if (role === "admin") {
+      router.push("/DashboardAdmin");
+    }
+  };
+
+  // ✅ Fetch user details from MongoDB
+  const fetchUserFromDB = async (firebaseUid) => {
+    try {
+      const res = await axios.get(`/api/users/${firebaseUid}`);
+      return res.data;
+    } catch (err) {
+      console.error("Error fetching user from DB:", err);
+      return null;
+    }
+  };
+
+  // ✅ Handle manual login
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      await signInWithEmailAndPassword(auth, form.email, form.password);
-      alert("Login successful!");
-      router.push("/Dashboard");
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        form.email,
+        form.password
+      );
+      const user = userCredential.user;
+
+      const dbUser = await fetchUserFromDB(user.uid);
+      if (!dbUser) throw new Error("User not found in database");
+
+      alert(`Welcome back, ${dbUser.name}!`);
+      routeByRole(dbUser.role);
     } catch (err) {
-      setError("Invalid email or password");
+      console.error(err);
+      setError("Invalid credentials or user not found in DB");
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle Google login
+  // ✅ Handle Google login
   const handleGoogleLogin = async () => {
     setLoading(true);
     setError("");
+
     try {
-      await signInWithPopup(auth, provider);
-      alert("Google login successful!");
-      router.push("/Dashboard");
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Check if user already exists
+      let dbUser = await fetchUserFromDB(user.uid);
+
+      if (!dbUser) {
+        // Create new user without role yet
+        const createRes = await axios.post(`/api/users`, {
+          firebaseUid: user.uid,
+          name: user.displayName || "Google User",
+          email: user.email,
+        });
+        dbUser = createRes.data;
+      }
+
+      // Redirect based on role presence
+      if (!dbUser.role) {
+        alert("Please choose your role to continue!");
+        router.push("/Option");
+      } else {
+        alert(`Welcome back, ${dbUser.name}!`);
+        routeByRole(dbUser.role);
+      }
     } catch (err) {
+      console.error(err);
       setError("Google sign-in failed. Please try again.");
     } finally {
       setLoading(false);
@@ -64,7 +121,7 @@ export default function LoginPage() {
             className="rounded-xl mb-2"
           />
           <Link href="/">
-            <h1 className="text-3xl font-bold text-blue-900" href="/">
+            <h1 className="text-3xl font-bold text-blue-900">
               Share<i>For</i>Care
             </h1>
           </Link>
@@ -74,6 +131,7 @@ export default function LoginPage() {
           Welcome Back
         </h2>
 
+        {/* Email/Password Login */}
         <form onSubmit={handleLogin} className="space-y-4">
           <input
             type="email"
@@ -101,7 +159,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Google Login Button */}
+        {/* Google Login */}
         <div className="mt-6">
           <button
             onClick={handleGoogleLogin}
