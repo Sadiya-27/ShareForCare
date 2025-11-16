@@ -4,7 +4,7 @@ import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
-import { LogOut, Home, Gift, User, Package } from "lucide-react";
+import { LogOut, Home, Gift, User as UserIcon, Package } from "lucide-react";
 import AddImageButton from "@/app/components/AddImageButton";
 import "@uploadthing/react/styles.css";
 
@@ -189,7 +189,7 @@ export default function RequestFootwear() {
               onClick={() => router.push("/profileNGO")}
               className="flex items-center rounded-lg gap-2 px-4 py-2 hover:bg-blue-700"
             >
-              <User size={20} /> Profile
+              <UserIcon size={20} /> Profile
             </button>
 
             <button
