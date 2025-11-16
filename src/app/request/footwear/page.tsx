@@ -62,7 +62,7 @@ export default function RequestFootwear() {
     router.push("/Login");
   };
 
-  const handleImagesUpload = (urls) => {
+  const handleImagesUpload = (urls : string[]) => {
     setImages((prev) => [...prev, ...urls]);
   };
 
