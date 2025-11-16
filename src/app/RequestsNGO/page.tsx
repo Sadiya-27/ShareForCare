@@ -90,7 +90,7 @@ export default function YourRequests() {
           .catch(() => []);
 
         const footwear: RequestItem[] = await fetch(
-          `/api/requests-footwear/by-user/${uid}`
+          `/api/request-footwear/by-user/${uid}`
         )
           .then((r) => r.json())
           .catch(() => []);
