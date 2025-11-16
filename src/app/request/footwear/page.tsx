@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
@@ -55,7 +55,7 @@ export default function RequestFootwear() {
       else setUser(currentUser);
     });
     return unsub;
-  }, []);
+  }, [router]);
 
   const handleLogout = async () => {
     await signOut(auth);
