@@ -74,9 +74,9 @@ export default function YourRequests() {
 
         // Combine into single list
         const combined = [
-          ...cloths.map((r : any) => ({ ...r, type: "cloths" })),
-          ...footwear.map((r : any) => ({ ...r, type: "footwear" })),
-          ...school.map((r : any) => ({ ...r, type: "school-supplies" })),
+          ...cloths.map((r) => ({ ...r, type: "cloths" })),
+          ...footwear.map((r) => ({ ...r, type: "footwear" })),
+          ...school.map((r) => ({ ...r, type: "school-supplies" })),
         ];
 
         setRequests(combined);
