@@ -9,7 +9,6 @@ import {
   Home,
   Users,
   Gift,
-  Repeat,
   User,
   Menu,
   X,
