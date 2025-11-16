@@ -9,7 +9,7 @@ import AddImageButton from "@/app/components/AddImageButton";
 import "@uploadthing/react/styles.css";
 
 export default function RequestFootwear() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [showDonateDropdown, setShowDonateDropdown] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [images, setImages] = useState([]);
