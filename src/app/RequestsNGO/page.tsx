@@ -94,7 +94,8 @@ export default function YourRequests() {
   // --------------------------------------------
   // MARK COMPLETED / NOT COMPLETED
   // --------------------------------------------
-  const markCompleted = async (id, type, status) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const markCompleted = async (id: any, type: any, status: any) => {
     const collection =
       type === "cloths"
         ? "requests"
