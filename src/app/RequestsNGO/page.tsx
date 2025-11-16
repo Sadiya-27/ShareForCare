@@ -74,10 +74,11 @@ export default function YourRequests() {
 
         // Combine into single list
         const combined = [
-          ...cloths.map((r) => ({ ...r, type: "cloths" })),
-          ...footwear.map((r) => ({ ...r, type: "footwear" })),
-          ...school.map((r) => ({ ...r, type: "school-supplies" })),
-        ];
+  ...cloths.map((r: Record<string, unknown>) => ({ ...r, type: "cloths" })),
+  ...footwear.map((r: Record<string, unknown>) => ({ ...r, type: "footwear" })),
+  ...school.map((r: Record<string, unknown>) => ({ ...r, type: "school-supplies" })),
+];
+
 
         setRequests(combined);
       } catch (err) {
