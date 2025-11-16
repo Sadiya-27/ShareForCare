@@ -24,7 +24,7 @@ export default function YourRequests() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showDonateDropdown, setShowDonateDropdown] = useState(false);
 
-  const [requests, setRequests] = useState<unknown[]>([]);
+  const [requests, setRequests] = useState<Record<string, any>[]>([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [loading, setLoading] = useState(true);
 
