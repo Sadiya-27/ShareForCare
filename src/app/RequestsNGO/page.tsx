@@ -10,7 +10,6 @@ import {
   LogOut,
   Home,
   Gift,
-  Repeat,
   User as UserIcon,
   Package,
   XCircle,
