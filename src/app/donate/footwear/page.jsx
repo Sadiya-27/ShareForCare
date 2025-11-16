@@ -4,7 +4,7 @@ import Image from "next/image";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
 import { useRouter, usePathname } from "next/navigation";
-import { LogOut, Home, Gift, Repeat, User, Menu, Package } from "lucide-react";
+import { LogOut, Home, Gift, User, Menu, Package } from "lucide-react";
 import AddImageButton from "@/app/components/AddImageButton";
 import "@uploadthing/react/styles.css";
 
