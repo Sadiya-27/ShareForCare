@@ -62,11 +62,11 @@ export default function RequestFootwear() {
     router.push("/Login");
   };
 
-  const handleImagesUpload = (urls: any) => {
+  const handleImagesUpload = (urls) => {
     setImages((prev) => [...prev, ...urls]);
   };
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const data = {
