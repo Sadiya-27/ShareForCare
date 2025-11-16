@@ -21,7 +21,7 @@ export async function GET(request, { params }) {
 
     // Fetch footwear request by ID
     const requestData = await db
-      .collection("request-footwear")
+      .collection("requests-footwear")
       .findOne({ _id: new ObjectId(id) });
 
     if (!requestData) {
@@ -57,7 +57,7 @@ export async function PATCH(req, { params }) {
     const client = await clientPromise;
     const db = client.db("your_database_name");
 
-    await db.collection("request-footwear").updateOne(
+    await db.collection("requests-footwear").updateOne(
       { _id: new ObjectId(id) },
       { $set: { completed } }
     );
