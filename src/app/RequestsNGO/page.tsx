@@ -55,6 +55,10 @@ export default function YourRequests() {
   const [selectedRequest, setSelectedRequest] = useState<RequestItem | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [activeTab, setActiveTab] = useState<"pending" | "completed">("pending");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [filterCompletedCategory, setFilterCompletedCategory] = useState<string>("all");
+
   const router = useRouter();
   const pathname = usePathname();
 
@@ -154,9 +158,14 @@ export default function YourRequests() {
   const pending = requests.filter((r) => !r.completed);
   const completedRequests = requests.filter((r) => r.completed);
 
-  const clothRequests = pending.filter((r) => r.type === "cloths");
-  const footwearRequests = pending.filter((r) => r.type === "footwear");
-  const schoolRequests = pending.filter((r) => r.type === "school-supplies");
+  // Apply category filter for pending requests
+  const filteredPending = pending.filter((r) =>
+    filterCategory === "all" ? true : r.type === filterCategory
+  );
+
+  const filteredCompleted = completedRequests.filter((r) =>
+    filterCompletedCategory === "all" ? true : r.type === filterCompletedCategory
+  );
 
   return (
     <div className="flex min-height-screen bg-white">
@@ -177,41 +186,92 @@ export default function YourRequests() {
             <Package size={28} /> Your Requests
           </h1>
 
-          {clothRequests.length > 0 && (
-            <Section
-              title="Cloths Requests"
-              items={clothRequests}
-              onClick={setSelectedRequest}
-            />
+          {/* TABS */}
+          <div className="flex gap-4 mb-6">
+            <button
+              onClick={() => setActiveTab("pending")}
+              className={`px-4 py-2 rounded-lg font-semibold ${
+                activeTab === "pending"
+                  ? "bg-blue-900 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              Pending
+            </button>
+
+            <button
+              onClick={() => setActiveTab("completed")}
+              className={`px-4 py-2 rounded-lg font-semibold ${
+                activeTab === "completed"
+                  ? "bg-blue-900 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              Completed
+            </button>
+          </div>
+
+          {/* FILTER CATEGORY */}
+          {activeTab === "pending" && (
+            <div className="mb-6">
+              <label className="font-semibold mr-3 text-gray-700">
+                Filter By Category:
+              </label>
+              <select
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+                className="border px-3 py-2 rounded-lg"
+              >
+                <option value="all">All</option>
+                <option value="cloths">Cloths</option>
+                <option value="footwear">Footwear</option>
+                <option value="school-supplies">School Supplies</option>
+              </select>
+            </div>
           )}
 
-          {footwearRequests.length > 0 && (
-            <Section
-              title="Footwear Requests"
-              items={footwearRequests}
-              onClick={setSelectedRequest}
-            />
-          )}
-
-          {schoolRequests.length > 0 && (
-            <Section
-              title="School Supplies Requests"
-              items={schoolRequests}
-              onClick={setSelectedRequest}
-            />
-          )}
-
-          {completedRequests.length > 0 && (
+          {activeTab === "pending" && (
             <>
-              <h2 className="text-2xl font-semibold text-green-700 mt-10">
-                Completed Requests
-              </h2>
-              <Section
-                title=""
-                items={completedRequests}
-                onClick={setSelectedRequest}
-                hideTitle
-              />
+              {filteredPending.length > 0 ? (
+                <Section
+                  title="Pending Requests"
+                  items={filteredPending}
+                  onClick={setSelectedRequest}
+                />
+              ) : (
+                <p className="text-gray-500 mt-4">No pending requests.</p>
+              )}
+            </>
+          )}
+
+          {activeTab === "completed" && (
+            <>
+              {/* COMPLETED CATEGORY FILTER */}
+              <div className="mb-6">
+                <label className="font-semibold mr-3 text-gray-700">
+                  Filter By Category:
+                </label>
+                <select
+                  value={filterCompletedCategory}
+                  onChange={(e) => setFilterCompletedCategory(e.target.value)}
+                  className="border px-3 py-2 rounded-lg"
+                >
+                  <option value="all">All</option>
+                  <option value="cloths">Cloths</option>
+                  <option value="footwear">Footwear</option>
+                  <option value="school-supplies">School Supplies</option>
+                </select>
+              </div>
+
+              {filteredCompleted.length > 0 ? (
+                <Section
+                  title="Completed Requests"
+                  items={filteredCompleted}
+                  onClick={setSelectedRequest}
+                />
+              ) : (
+                <p className="text-gray-500 mt-4">No completed requests.</p>
+              )}
             </>
           )}
 
