@@ -23,6 +23,10 @@ export default function YourDonations() {
   const [selectedDonation, setSelectedDonation] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [activeTab, setActiveTab] = useState("pending");
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [filterCompletedCategory, setFilterCompletedCategory] = useState("all");
+
   const router = useRouter();
 
   // AUTH CHECK
@@ -109,10 +113,18 @@ export default function YourDonations() {
   const pending = donations.filter((d) => !d.completed);
   const completedDonations = donations.filter((d) => d.completed);
 
-  const clothDonations = pending.filter((d) => d.type === "cloths");
-  const footwearDonations = pending.filter((d) => d.type === "footwear");
-  const schoolDonations = pending.filter((d) => d.type === "school-supplies");
+  // Pending Filter
+  const filteredPending = pending.filter((d) =>
+    filterCategory === "all" ? true : d.type === filterCategory
+  );
 
+  // Completed Filter
+  const filteredCompleted = completedDonations.filter((d) =>
+    filterCompletedCategory === "all"
+      ? true
+      : d.type === filterCompletedCategory
+  );
+  
   return (
     <div className="flex min-h-screen bg-white">
       {/* Sidebar */}
@@ -131,45 +143,96 @@ export default function YourDonations() {
             <Package size={28} /> Your Donations
           </h1>
 
-          {/* CLOTHS */}
-          {clothDonations.length > 0 && (
-            <Section
-              title="Cloth Donations"
-              items={clothDonations}
-              onClick={setSelectedDonation}
-            />
+          {/* TABS */}
+          <div className="flex gap-4 mb-6">
+            <button
+              onClick={() => setActiveTab("pending")}
+              className={`px-4 py-2 rounded-lg font-semibold ${
+                activeTab === "pending"
+                  ? "bg-blue-900 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              Pending
+            </button>
+
+            <button
+              onClick={() => setActiveTab("completed")}
+              className={`px-4 py-2 rounded-lg font-semibold ${
+                activeTab === "completed"
+                  ? "bg-blue-900 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              Completed
+            </button>
+          </div>
+
+          {/* FILTER FOR PENDING */}
+          {activeTab === "pending" && (
+            <div className="mb-6">
+              <label className="font-semibold mr-3 text-gray-700">
+                Filter By Category:
+              </label>
+              <select
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+                className="border px-3 py-2 rounded-lg"
+              >
+                <option value="all">All</option>
+                <option value="cloths">Cloths</option>
+                <option value="footwear">Footwear</option>
+                <option value="school-supplies">School Supplies</option>
+              </select>
+            </div>
           )}
 
-          {/* FOOTWEAR */}
-          {footwearDonations.length > 0 && (
-            <Section
-              title="Footwear Donations"
-              items={footwearDonations}
-              onClick={setSelectedDonation}
-            />
+          {/* FILTER FOR COMPLETED */}
+          {activeTab === "completed" && (
+            <div className="mb-6">
+              <label className="font-semibold mr-3 text-gray-700">
+                Filter By Category:
+              </label>
+              <select
+                value={filterCompletedCategory}
+                onChange={(e) => setFilterCompletedCategory(e.target.value)}
+                className="border px-3 py-2 rounded-lg"
+              >
+                <option value="all">All</option>
+                <option value="cloths">Cloths</option>
+                <option value="footwear">Footwear</option>
+                <option value="school-supplies">School Supplies</option>
+              </select>
+            </div>
           )}
 
-          {/* SCHOOL SUPPLIES */}
-          {schoolDonations.length > 0 && (
-            <Section
-              title="School Supplies Donations"
-              items={schoolDonations}
-              onClick={setSelectedDonation}
-            />
-          )}
-
-          {/* COMPLETED */}
-          {completedDonations.length > 0 && (
+          {/* PENDING TAB */}
+          {activeTab === "pending" && (
             <>
-              <h2 className="text-2xl font-semibold text-green-700 mt-10">
-                Completed Donations
-              </h2>
-              <Section
-                title=""
-                items={completedDonations}
-                onClick={setSelectedDonation}
-                hideTitle
-              />
+              {filteredPending.length > 0 ? (
+                <Section
+                  title="Pending Donations"
+                  items={filteredPending}
+                  onClick={setSelectedDonation}
+                />
+              ) : (
+                <p className="text-gray-500">No pending donations.</p>
+              )}
+            </>
+          )}
+
+          {/* COMPLETED TAB */}
+          {activeTab === "completed" && (
+            <>
+              {filteredCompleted.length > 0 ? (
+                <Section
+                  title="Completed Donations"
+                  items={filteredCompleted}
+                  onClick={setSelectedDonation}
+                />
+              ) : (
+                <p className="text-gray-500">No completed donations.</p>
+              )}
             </>
           )}
 
