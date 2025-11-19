@@ -65,17 +65,17 @@ export default function Dashboard() {
             // --- GET ALL DONATIONS ---
             const cloths = await fetch(`/api/donate-cloths/by-user/${uid}`)
               .then((r) => r.json())
-              .then((arr) => arr.filter((item) => !item.completed)); // remove completed
+              .then((arr) => arr.filter((item) => !item.completed && !item.accepted)); // remove completed
 
             const footwear = await fetch(`/api/donate-footwear/by-user/${uid}`)
               .then((r) => r.json())
-              .then((arr) => arr.filter((item) => !item.completed));
+              .then((arr) => arr.filter((item) => !item.completed && !item.accepted));
 
             const school = await fetch(
               `/api/donate-school-supplies/by-user/${uid}`
             )
               .then((r) => r.json())
-              .then((arr) => arr.filter((item) => !item.completed));
+              .then((arr) => arr.filter((item) => !item.completed && !item.accepted));
 
             return {
               ...v,
@@ -141,6 +141,49 @@ export default function Dashboard() {
 
     return matchesSearch && matchesCategory && hasAnyDonation;
   });
+
+  const handleAcceptDonation = async (donation, volunteer) => {
+  try {
+    // Ask confirmation
+    if (!confirm("Are you sure you want to accept this donation?")) return;
+
+    const donationType =
+      donation.clothType ? "cloths" :
+      donation.shoeType ? "footwear" :
+      donation.itemType ? "school-supplies" :
+      null;
+
+    if (!donationType) {
+      alert("Donation type could not be determined.");
+      return;
+    }
+
+    const res = await fetch(`/api/donation-accept/${donation._id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        donationType,
+        ngoId: user.uid, // NGO firebase UID
+      }),
+    });
+
+    if (!res.ok) {
+      alert("Error accepting donation.");
+      return;
+    }
+
+    alert("Donation accepted successfully!");
+    setSelectedVolunteer(null); // close modal
+
+    // refresh the list
+    location.reload();
+
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Something went wrong.");
+  }
+};
+
 
   return (
     <div className="flex min-h-screen bg-white">
@@ -548,6 +591,14 @@ export default function Dashboard() {
                                   item.availableFrom
                                 ).toLocaleDateString()}
                               </p>
+                              <button
+                                onClick={() =>
+                                  handleAcceptDonation(item, selectedVolunteer)
+                                }
+                                className="mt-3 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                              >
+                                Accept Donation
+                              </button>
                             </div>
                           )
                         )}
@@ -633,6 +684,14 @@ export default function Dashboard() {
                                   item.availableFrom
                                 ).toLocaleDateString()}
                               </p>
+                              <button
+                                onClick={() =>
+                                  handleAcceptDonation(item, selectedVolunteer)
+                                }
+                                className="mt-3 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                              >
+                                Accept Donation
+                              </button>
                             </div>
                           )
                         )}
@@ -710,6 +769,14 @@ export default function Dashboard() {
                                   item.availableFrom
                                 ).toLocaleDateString()}
                               </p>
+                              <button
+                                onClick={() =>
+                                  handleAcceptDonation(item, selectedVolunteer)
+                                }
+                                className="mt-3 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                              >
+                                Accept Donation
+                              </button>
                             </div>
                           )
                         )}
