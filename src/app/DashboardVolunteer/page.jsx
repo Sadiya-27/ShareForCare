@@ -53,21 +53,26 @@ export default function Dashboard() {
           data.map(async (ngo) => {
             const uid = ngo.firebaseUid;
 
+            const filterPending = (arr) =>
+              Array.isArray(arr)
+                ? arr.filter((item) => !item.completed && !item.accepted)
+                : [];
+            
             const clothReq = await fetch(`/api/requests/by-user/${uid}`)
               .then((r) => r.json())
-              .then((arr) => arr.filter((item) => !item.completed)); // <-- filter here
+              .then(filterPending); // <-- filter here
 
             const footwearReq = await fetch(
               `/api/request-footwear/by-user/${uid}`
             )
               .then((r) => r.json())
-              .then((arr) => arr.filter((item) => !item.completed));
+              .then(filterPending);
 
             const schoolReq = await fetch(
               `/api/request-school-supplies/by-user/${uid}`
             )
               .then((r) => r.json())
-              .then((arr) => arr.filter((item) => !item.completed));
+              .then(filterPending);
 
             return {
               ...ngo,
@@ -134,6 +139,47 @@ export default function Dashboard() {
 
     return matchesSearch && matchesCategory && hasAnyRequest;
   });
+
+  const handleAcceptRequest = async (requestItem, ngo) => {
+    try {
+      if (!confirm("Do you want to accept this request?")) return;
+
+      // detect request type
+      const requestType = requestItem.clothType
+        ? "cloths"
+        : requestItem.shoeType
+        ? "footwear"
+        : requestItem.itemType
+        ? "school-supplies"
+        : null;
+
+      if (!requestType) {
+        alert("Unable to detect request type.");
+        return;
+      }
+
+      const res = await fetch(`/api/request-accept/${requestItem._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestType,
+          volunteerId: user.uid, // logged-in volunteer UID
+        }),
+      });
+
+      if (!res.ok) {
+        alert("Error accepting request.");
+        return;
+      }
+
+      alert("Request accepted successfully!");
+      setSelectedNgo(null);
+      location.reload();
+    } catch (err) {
+      console.error("Error:", err);
+      alert("Something went wrong.");
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-white">
@@ -533,6 +579,14 @@ export default function Dashboard() {
                             <p>
                               <strong>Urgency:</strong> {item.urgency}
                             </p>
+                            <button
+                              onClick={() =>
+                                handleAcceptRequest(item, selectedNgo)
+                              }
+                              className="mt-3 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                            >
+                              Accept Request
+                            </button>
                           </div>
                         ))}
                       </div>
@@ -623,6 +677,14 @@ export default function Dashboard() {
                             <p>
                               <strong>Urgency:</strong> {item.urgency}
                             </p>
+                            <button
+                              onClick={() =>
+                                handleAcceptRequest(item, selectedNgo)
+                              }
+                              className="mt-3 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                            >
+                              Accept Request
+                            </button>
                           </div>
                         ))}
                       </div>
@@ -703,6 +765,14 @@ export default function Dashboard() {
                               <p>
                                 <strong>Urgency:</strong> {item.urgency}
                               </p>
+                              <button
+                              onClick={() =>
+                                handleAcceptRequest(item, selectedNgo)
+                              }
+                              className="mt-3 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                            >
+                              Accept Request
+                            </button>
                             </div>
                           )
                         )}
