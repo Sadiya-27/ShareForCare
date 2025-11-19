@@ -26,6 +26,7 @@ export default function YourDonations() {
   const [activeTab, setActiveTab] = useState("pending");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterCompletedCategory, setFilterCompletedCategory] = useState("all");
+  const [filterAcceptedCategory, setFilterAcceptedCategory] = useState("all");
 
   const router = useRouter();
 
@@ -110,7 +111,7 @@ export default function YourDonations() {
     return <p className="text-center mt-10 text-gray-500">Loading...</p>;
 
   // FILTERS
-  const pending = donations.filter((d) => !d.completed);
+  const pending = donations.filter((d) => !d.completed && !d.accepted);
   const completedDonations = donations.filter((d) => d.completed);
 
   // Pending Filter
@@ -124,6 +125,13 @@ export default function YourDonations() {
       ? true
       : d.type === filterCompletedCategory
   );
+
+  const accepted = donations.filter((d) => d.accepted === true);
+
+// Apply filter
+const filteredAccepted = accepted.filter((d) =>
+  filterAcceptedCategory === "all" ? true : d.type === filterAcceptedCategory
+);
   
   return (
     <div className="flex min-h-screen bg-white">
@@ -157,6 +165,17 @@ export default function YourDonations() {
             </button>
 
             <button
+              onClick={() => setActiveTab("accepted")}
+              className={`px-4 py-2 rounded-lg font-semibold ${
+                activeTab === "accepted"
+                  ? "bg-blue-900 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              Accepted
+            </button>
+
+            <button
               onClick={() => setActiveTab("completed")}
               className={`px-4 py-2 rounded-lg font-semibold ${
                 activeTab === "completed"
@@ -177,6 +196,24 @@ export default function YourDonations() {
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
+                className="border px-3 py-2 rounded-lg"
+              >
+                <option value="all">All</option>
+                <option value="cloths">Cloths</option>
+                <option value="footwear">Footwear</option>
+                <option value="school-supplies">School Supplies</option>
+              </select>
+            </div>
+          )}
+
+          {activeTab === "accepted" && (
+            <div className="mb-6">
+              <label className="font-semibold mr-3 text-gray-700">
+                Filter By Category:
+              </label>
+              <select
+                value={filterAcceptedCategory}
+                onChange={(e) => setFilterAcceptedCategory(e.target.value)}
                 className="border px-3 py-2 rounded-lg"
               >
                 <option value="all">All</option>
@@ -232,6 +269,20 @@ export default function YourDonations() {
                 />
               ) : (
                 <p className="text-gray-500">No completed donations.</p>
+              )}
+            </>
+          )}
+
+          {activeTab === "accepted" && (
+            <>
+              {filteredAccepted.length > 0 ? (
+                <Section
+                  title="Accepted Donations"
+                  items={filteredAccepted}
+                  onClick={setSelectedDonation}
+                />
+              ) : (
+                <p className="text-gray-500">No accepted donations.</p>
               )}
             </>
           )}
