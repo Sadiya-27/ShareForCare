@@ -55,10 +55,13 @@ export default function YourRequests() {
   const [selectedRequest, setSelectedRequest] = useState<RequestItem | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [activeTab, setActiveTab] = useState<"pending" | "completed">("pending");
+  const [activeTab, setActiveTab] = useState<
+    "pending" | "accepted" | "completed"
+  >("pending");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterCompletedCategory, setFilterCompletedCategory] = useState<string>("all");
-
+  const [filterAcceptedCategory, setFilterAcceptedCategory] = useState("all");
+  
   const router = useRouter();
   const pathname = usePathname();
 
@@ -167,6 +170,15 @@ export default function YourRequests() {
     filterCompletedCategory === "all" ? true : r.type === filterCompletedCategory
   );
 
+  const accepted = requests.filter(
+    (r) => r.accepted === true
+  );
+
+  // Apply filter
+  const filteredAccepted = accepted.filter((r) =>
+    filterAcceptedCategory === "all" ? true : r.type === filterAcceptedCategory
+  );
+
   return (
     <div className="flex min-height-screen bg-white">
       {/* Sidebar */}
@@ -197,6 +209,17 @@ export default function YourRequests() {
               }`}
             >
               Pending
+            </button>
+
+            <button
+              onClick={() => setActiveTab("accepted")}
+              className={`px-4 py-2 rounded-lg font-semibold ${
+                activeTab === "accepted"
+                  ? "bg-blue-900 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              Accepted
             </button>
 
             <button
@@ -271,6 +294,38 @@ export default function YourRequests() {
                 />
               ) : (
                 <p className="text-gray-500 mt-4">No completed requests.</p>
+              )}
+            </>
+          )}
+
+          {activeTab === "accepted" && (
+            <div className="mb-6">
+              <label className="font-semibold mr-3 text-gray-700">
+                Filter By Category:
+              </label>
+              <select
+                value={filterAcceptedCategory}
+                onChange={(e) => setFilterAcceptedCategory(e.target.value)}
+                className="border px-3 py-2 rounded-lg"
+              >
+                <option value="all">All</option>
+                <option value="cloths">Cloths</option>
+                <option value="footwear">Footwear</option>
+                <option value="school-supplies">School Supplies</option>
+              </select>
+            </div>
+          )}
+
+          {activeTab === "accepted" && (
+            <>
+              {filteredAccepted.length > 0 ? (
+                <Section
+                  title="Accepted Requests"
+                  items={filteredAccepted}
+                  onClick={setSelectedRequest}
+                />
+              ) : (
+                <p className="text-gray-500">No accepted requests.</p>
               )}
             </>
           )}
