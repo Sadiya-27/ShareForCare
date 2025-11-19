@@ -158,7 +158,7 @@ export default function YourRequests() {
   if (loading)
     return <p className="text-center mt-10 text-gray-600">Loading...</p>;
 
-  const pending = requests.filter((r) => !r.completed);
+  const pending = requests.filter((r) => !r.completed && !r.accepted);
   const completedRequests = requests.filter((r) => r.completed);
 
   // Apply category filter for pending requests
